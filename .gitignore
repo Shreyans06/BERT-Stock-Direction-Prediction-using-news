@@ -1,7 +1,7 @@
 __pycache__
-dataset
-metrics
-models
+dataset/*
+metrics/*
+models/*
 plots/*
 !.gitkeep
 tokenized_data

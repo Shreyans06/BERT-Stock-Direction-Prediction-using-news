@@ -2,7 +2,7 @@ __pycache__
 dataset
 metrics
 models
-req.txt
+plots
+tokenized_data
 *.err
 *.out
-tokenized_data

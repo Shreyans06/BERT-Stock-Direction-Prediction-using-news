@@ -1,9 +1,6 @@
 import re
-from transformers import BertTokenizer
 import torch
-import string
-from summary import summarize , summarize_transformers
-import numpy as np
+from summary import summarize
 
 def text_preprocessing(text , summary_type):
     """
@@ -13,9 +10,9 @@ def text_preprocessing(text , summary_type):
     @return   text (str): the processed string.
     """
     # text = text.lower()
-    # text = re.sub('\[.*?\]', '', text)
-    # text = re.sub('https?://\S+|www\.\S+', '', text)
-    # text = re.sub('\n', '', text)
+    text = re.sub('\[.*?\]', '', text)
+    text = re.sub('https?://\S+|www\.\S+', '', text)
+    text = re.sub('\n', '', text)
     
     # Remove '@name'
     text = re.sub(r'(@.*?)[\s]', ' ', text)
@@ -30,8 +27,6 @@ def text_preprocessing(text , summary_type):
         words = text.split(" ")
         per = 200 / len(words) 
         text = summarize(text , per)
-    else:
-        text = summarize_transformers(text)
         
     return text
 
@@ -50,18 +45,10 @@ def bert_preprocessing(tokenizer , text , MAX_LEN = 512):
     for index , row in enumerate(text):
         
         encoded = tokenizer.__call__(text = row , add_special_tokens = True , padding = 'max_length' , truncation = True , max_length = MAX_LEN , return_attention_mask = True)
-        # print(encoded)
+        
         input_ids.append(encoded.get('input_ids'))
         attention_masks.append(encoded.get('attention_mask'))
-        # print(encoded)
-        # input_ids.append(encoded)
-        # encoded = np.array(encoded)
-        # masks = np.where(encoded != 0 , 1 , 0).tolist()
-        # print(masks)
-        # attention_masks.append(masks)
         
-    # print(len(input_ids[0]))
-    # print((len(attention_masks[0])))
     input_ids = torch.tensor(input_ids)
     attention_masks = torch.tensor(attention_masks)
 

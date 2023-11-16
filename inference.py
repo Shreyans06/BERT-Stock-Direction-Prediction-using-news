@@ -1,12 +1,11 @@
-from numpy import argmax
 import torch 
-from model import BertClassifier , DistillBERTClass , finBertClassifier
+from model import BertClassifier , finBertClassifier
 from transformers import AutoTokenizer , AutoModelForSequenceClassification 
 import torch.nn.functional as F
 import numpy as np
 from transformers import pipeline
 
-MAX_LEN = 512
+MAX_LEN = 128
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def bert_predict(model, test_text):
@@ -14,7 +13,6 @@ def bert_predict(model, test_text):
     on the test set.
     """
     # Put the model into the evaluation mode.
-    
     model.eval()
 
     all_logits = []
@@ -28,9 +26,9 @@ def bert_predict(model, test_text):
     # Compute logits
     with torch.no_grad():
         logits = model(b_input_ids, b_attn_mask)
-
-    all_logits.append(logits)
     
+    all_logits.append(logits)
+
     # Concatenate logits from each batch
     all_logits = torch.cat(all_logits, dim=0)
 
@@ -40,28 +38,41 @@ def bert_predict(model, test_text):
     return probs
 
 def infer(text):
+
+    path = f"./models/amazon_news_daily_summarized_spacy_ProsusAI_finbert_spacy_text_128_16_1e-05/1.pt"
+    checkpoint = torch.load(path)
+
     # bert_classifier = BertClassifier("bert-base-uncased" , num_classes= 2 , freeze_bert = False)
     bert_classifier = finBertClassifier("ProsusAI/finbert")
 
-    checkpoint = torch.load("/home/snola136/SWM/models/amazon_news_hourly_summarized_spacy_ProsusAI_finbert_spacy_text_512_32_5e-05.pt")
-
+    # load the model weights
     bert_classifier.load_state_dict(checkpoint['model_state_dict'])
 
+    # get the tokenizer from for the respective model
     tokenizer = AutoTokenizer.from_pretrained("ProsusAI/finbert")
 
+    # get the input ids and the attention masks
     encoded = tokenizer.__call__(text , add_special_tokens = True , padding = 'max_length' , truncation = True , max_length = MAX_LEN , return_attention_mask = True)
     input_ids = encoded.get('input_ids')
     attn_mask = encoded.get('attention_mask')
 
+    # predict the sentence class
     probs = bert_predict(bert_classifier, (input_ids , attn_mask))
 
+    # set the threshold for the classification
     threshold = 0.5
+
+    # get the argmax of the probabilites
     class_output =  np.where(probs[:, 1] > threshold, 1, 0)
+
     return class_output[0]
 
 
 def test(text):
+    
+    # Define the pipeline 
     pipe = pipeline("text-classification", model="ProsusAI/finbert")
+
     result = pipe(text)[0]['label']
     score = pipe(text)[0]['score'] 
 
@@ -73,4 +84,4 @@ def test(text):
     
     return 0
 
-print(test(text))
+print(infer("No sales for amazon"))

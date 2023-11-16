@@ -1,5 +1,5 @@
 import torch.nn as nn
-from transformers import BertModel , AutoModelForSequenceClassification , DistilBertModel
+from transformers import BertModel , AutoModelForSequenceClassification 
 
 class BertClassifier(nn.Module):
     """
@@ -22,10 +22,10 @@ class BertClassifier(nn.Module):
 
         # Adding the final linear layer 
         self.classifier = nn.Sequential(
-            nn.Linear(self.hidden_layers, 50),
-            nn.ReLU(),
+            nn.Linear(self.hidden_layers, self.num_classes)
+            # nn.ReLU(),
             # nn.Dropout(0.2), 
-            nn.Linear(50 , self.num_classes)
+            # nn.Linear(50 , self.num_classes)
             )
           
         if freeze_bert:
@@ -58,6 +58,7 @@ class finBertClassifier(nn.Module):
         @param freeze_bert (bool) : Set 'False' to fine tune the BERT model 
         """
         super(finBertClassifier , self).__init__()
+        
         # Loading the pre-trained BERT
         self.bert = AutoModelForSequenceClassification.from_pretrained(model_name , num_labels = 3)
 
@@ -84,20 +85,3 @@ class finBertClassifier(nn.Module):
         
         return output
 
-class DistillBERTClass(nn.Module):
-    def __init__(self , num_classes = 2):
-        super(DistillBERTClass, self).__init__()
-        self.l1 = DistilBertModel.from_pretrained("distilbert-base-uncased")
-        self.pre_classifier = nn.Linear(768, 768)
-        self.dropout = nn.Dropout(0.3)
-        self.classifier = nn.Linear(768, num_classes)
-
-    def forward(self, input_ids, attention_mask):
-        output_1 = self.l1(input_ids=input_ids, attention_mask=attention_mask)
-        hidden_state = output_1[0]
-        pooler = hidden_state[:, 0]
-        pooler = self.pre_classifier(pooler)
-        pooler = nn.ReLU()(pooler)
-        pooler = self.dropout(pooler)
-        output = self.classifier(pooler)
-        return output

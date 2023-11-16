@@ -2,7 +2,8 @@ __pycache__
 dataset
 metrics
 models
-plots
+plots/*
+!.gitkeep
 tokenized_data
 *.err
 *.out

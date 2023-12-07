@@ -3,7 +3,8 @@ dataset/*
 metrics/*
 models/*
 plots/*
+tokenized_data/*
 !.gitkeep
-tokenized_data
+*.sh
 *.err
 *.out

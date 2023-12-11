@@ -1,2 +1,2 @@
 # BERT-text-classification
-A text classification project that is built using the BERT pre-trained model. It includes the complete pipeline from data cleaning to getting the final output.
+A stock price direction prediction project built using the BERT pre-trained model. The given data consists of daily news, tweets and the charts of the stock. We focus mainly on two companies: Apple and Amazon. 
